@@ -1,0 +1,26 @@
+{
+  "name": "options-trading",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "put"  :"node src/put.js",
+    "call" :"node src/call.js",
+    "devput":"nodemon src/put.js",
+    "devcall":"nodemon src/call.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  },
+  "dependencies": {
+    "axios": "^1.2.1",
+    "chalk": "^5.2.0",
+    "date-and-time": "^2.4.1",
+    "dotenv": "^16.0.3"
+  }
+}
