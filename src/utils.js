@@ -37,7 +37,7 @@ export const convertStringtoDate = (stringDate) =>{
     const month = monthNames.indexOf(monthName);
     const year = month >= currMonth ? currYear : currYear + 1   
 
-    const date =  new Date (`${year}-${month+1}-${day+1}`)
+    const date =  new Date (`${year}-${month+1}-${day}`)
     date.setUTCHours(0,0,0,0)
     return date 
 
