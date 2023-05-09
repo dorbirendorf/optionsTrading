@@ -7,7 +7,10 @@ This project is a tool designed to help options traders find options with high r
 To set up the project on your local machine and use the options trading tool, follow these steps:
 
 1. Run `npm install` to install all required dependencies.
-2. Run `npm run put` to get information about the best put orders or `npm run call` to get information about the best call orders.
+2. Run `npm run put` to get information about the best put orders
+3. Run `npm run call` to get information about the best call orders.
+4. Run `npm run cherry` to get information about cheery put orders.
+
 
 ## Usage
 
