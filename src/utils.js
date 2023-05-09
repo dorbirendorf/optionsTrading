@@ -5,10 +5,9 @@ import chalk from "chalk"
 
 
 export const calcROI = (optionPrice,targetPrice,daysToExp,lavrage=0.1,commission=0) => {
-    
     const cost = targetPrice * lavrage + commission ;
     const profit = optionPrice  ;
-    const timesInYear = 365 / (daysToExp+2); 
+    const timesInYear = 365 / (daysToExp+2);
     const ROI = (profit * timesInYear) / cost;
     return ROI
 }
@@ -29,21 +28,22 @@ export const convertStringtoDate = (stringDate) =>{
     const currMonth = today.getMonth();
     const currYear = today.getFullYear()
 
- 
+
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
     const [monthName,dayStr] = stringDate.split(' ');
     const day = parseInt(dayStr);
     const month = monthNames.indexOf(monthName);
-    const year = month >= currMonth ? currYear : currYear + 1   
+    const year = month >= currMonth ? currYear : currYear + 1
 
     const date =  new Date (`${year}-${month+1}-${day}`)
     date.setUTCHours(0,0,0,0)
-    return date 
+    return date
 
- }
+}
 
- export const parsePutParams = () =>{
+
+export const parsePutParams = () =>{
 
     const date = new Date(Date.now());
     date.setDate(date.getDate() + 45);
@@ -52,7 +52,6 @@ export const convertStringtoDate = (stringDate) =>{
     const dataFromFile = fs.readFileSync(process.cwd() +`/data/put.txt`,"utf-8").split("\n") ;
     const stocksData = dataFromFile.map((row)=>{
         let [s,p] = row.split(",")
-        
         return {"symbol":s,"maxStrikePrice":parseFloat(p).toFixed(2)}
     }).filter(stock => stock.maxStrikePrice && stock.symbol);
 
@@ -64,30 +63,85 @@ export const getOptionQuote = async (ticker,maxExpDate,maxStrikePrice,Optiontype
         const today = new Date(Date.now())
         const todayStr = today.toISOString().split('T')[0];
         const res = await axios.get(`https://api.nasdaq.com/api/quote/${ticker}/option-chain?assetclass=stocks&fromdate=${todayStr}&todate=${maxExpDate}&excode=oprac&callput=${Optiontype}&money=out&type=all`)
-        const rows = res.data?.data?.table?.rows || [];        
-        const currentPrice  = parseFloat(res.data?.data?.lastTrade.split('$')[1].split('(')[0].trim());
-        const miliSecInDay = 24*3600*1000;
-        let chain = rows
-        .filter( (row) => Optiontype=="put" ? (parseFloat(row.strike) <  parseFloat(maxStrikePrice)) && (row.p_Bid !== '--') :(parseFloat(row.strike) >  parseFloat(maxStrikePrice)) && (row.c_Bid !== '--') )
-        .map(chainLink=>{
-            const bid = Optiontype=="put" ? chainLink.p_Bid : chainLink.c_Bid
-            const strikePrice = parseFloat(chainLink.strike); 
+        const rows = res.data?.data?.table?.rows || [];
+        //const currentPrice  = parseFloat(res.data?.data?.lastTrade.split('$')[1].split('(')[0].trim());
+
+        return rows;
+    }catch(e){
+        console.log(e)
+    }
+}
+
+
+export const putRoi = (chain,currentPrice,ticker) => {
+    const miliSecInDay = 24*3600*1000
+    const today = new Date(Date.now())
+    const res = chain.map(chainLink=>{
+    const bid = chainLink.p_Bid
+    const strikePrice = parseFloat(chainLink.strike);
+    const expDate = convertStringtoDate(chainLink.expiryDate)
+    const expDateStr = expDate.toISOString().split('T')[0];
+    const daysToExp = Math.ceil((expDate-today) / miliSecInDay );
+    const PercentageFromStrike = calcPercentageFromCurrent(strikePrice,currentPrice);
+    const ROI = calcROI(bid,strikePrice,daysToExp);
+    return {ticker,currentPrice,strikePrice,expDateStr,bid,PercentageFromStrike,ROI}
+})
+.sort((a,b)=> b.ROI-a.ROI)
+
+
+return res;
+}
+
+export const putCherry = (chain,currentPrice,ticker) => {
+        const miliSecInDay = 24*3600*1000
+        const today = new Date(Date.now())
+         chain = chain.map(chainLink=>{
+            const bid = chainLink.p_Bid
+            const strikePrice = parseFloat(chainLink.strike);
             const expDate = convertStringtoDate(chainLink.expiryDate)
             const expDateStr = expDate.toISOString().split('T')[0];
             const daysToExp = Math.ceil((expDate-today) / miliSecInDay );
             const PercentageFromStrike = calcPercentageFromCurrent(strikePrice,currentPrice);
             const ROI = calcROI(bid,strikePrice,daysToExp);
-            return {ticker,currentPrice,strikePrice,expDateStr,bid,PercentageFromStrike,ROI}
+            return {...chainLink,ticker,currentPrice,strikePrice,expDateStr,bid,PercentageFromStrike,ROI}
         })
+        const cherries = chain.filter((item,idx)=>{
+            return (
+                idx>0  &&
+                chain[idx].expiryDate === chain[idx-1].expiryDate &&
+                Math.abs(chain[idx].PercentageFromStrike) < Math.abs(chain[idx-1].PercentageFromStrike) &&
+                parseFloat(chain[idx].p_Bid) > parseFloat(chain[idx-1].p_Bid) )
+        })
+    return cherries.sort((a,b)=> b.ROI-a.ROI)
+
+}
+export const callRoi = (chain,currentPrice,ticker) => {
+    const miliSecInDay = 24*3600*1000
+    const today = new Date(Date.now())
+    const res = chain.map(chainLink=>{
+        const bid = chainLink.c_Bid
+        const strikePrice = parseFloat(chainLink.strike);
+        const expDate = convertStringtoDate(chainLink.expiryDate)
+        const expDateStr = expDate.toISOString().split('T')[0];
+        const daysToExp = Math.ceil((expDate-today) / miliSecInDay );
+        const PercentageFromStrike = calcPercentageFromCurrent(strikePrice,currentPrice);
+        const ROI = calcROI(bid,strikePrice,daysToExp);
+        return {ticker,currentPrice,strikePrice,expDateStr,bid,PercentageFromStrike,ROI}
+    })
         .sort((a,b)=> b.ROI-a.ROI)
 
-        
-        return chain;
-        
-    }catch(e){
-        console.log(e)
-    }
+
+    return res;
 }
+
+export const filterStockChain = (stockChain,Optiontype,maxStrikePrice) => {
+   return  stockChain.filter(
+       (row) =>
+           Optiontype=="put" ?
+           (parseFloat(row.strike) <  parseFloat(maxStrikePrice)) && (row.p_Bid !== '--') :
+           (parseFloat(row.strike) >  parseFloat(maxStrikePrice)) && (row.c_Bid !== '--') )
+}
+
 
 export const getStockPrice = async (symbol)=>{
     const apikey = process.env.API_KEY;
@@ -95,7 +149,7 @@ export const getStockPrice = async (symbol)=>{
     const response = await axios.get(endpoint);
 
     const stockPrice = response.data["Global Quote"]["05. price"]
-    return stockPrice
+    return parseFloat(stockPrice).toFixed(2)
 }
 
 export const parseCallParams = () =>{
@@ -111,9 +165,11 @@ export const parseCallParams = () =>{
     let stocksData = dataFromFile.map((row)=>{
         console.log(row)
         let [s,p] = row.split(",")
-        
+
         return {"symbol":s,"minPercentageChange":parseFloat(p)}
     }).filter(stock => stock.minPercentageChange && stock.symbol);
 
     return {maxExpDate,stocksData};
 }
+
+

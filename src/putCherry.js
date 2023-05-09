@@ -1,4 +1,12 @@
-import {parsePutParams, getOptionQuote, getStockPrice, filterStockChain, putRoi, printStockChains} from "./utils.js";
+import {
+    parsePutParams,
+    getOptionQuote,
+    getStockPrice,
+    filterStockChain,
+    putRoi,
+    printStockChains,
+    putCherry
+} from "./utils.js";
 
 
 
@@ -12,7 +20,7 @@ for(const stockData of stocksData ){
         ])
     const filteredStockOptionsChain = filterStockChain(stockOptionsChain,"put",stockData.maxStrikePrice)
 
-    resultArr = resultArr.concat(putRoi(filteredStockOptionsChain,StockCurrentPrice,stockData.symbol))
+    resultArr = resultArr.concat(putCherry(filteredStockOptionsChain,StockCurrentPrice,stockData.symbol))
 }
     printStockChains(resultArr)
 

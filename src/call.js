@@ -1,11 +1,27 @@
-import {parsePutParams,getOptionQuote,printStockChains,getStockPrice as getStockQuote,parseCallParams} from "./utils.js";
+import {
+    parsePutParams,
+    getOptionQuote,
+    getStockPrice,
+    filterStockChain,
+    callRoi,
+    printStockChains,
+    parseCallParams
+} from "./utils.js";
 
- const {maxExpDate , stocksData} = parseCallParams();
 
-await Promise.all(stocksData.map(async(stock)=>{
-    stock.currPrice =await getStockQuote(stock.symbol)
-}))
- const stocksChains =await Promise.all(stocksData.map(async stock =>await getOptionQuote(stock.symbol , maxExpDate , stock.currPrice *(1+(stock.minPercentageChange/100)) , "call" )));
 
- stocksChains.forEach(chain => printStockChains(chain));
+const {maxExpDate , stocksData} = parseCallParams();
+
+let resultArr = []
+for(const stockData of stocksData ){
+    const [stockOptionsChain,StockCurrentPrice] = await Promise.all([
+        getOptionQuote(stockData.symbol , maxExpDate , stockData.maxStrikePrice,"call" ),
+        getStockPrice(stockData.symbol)
+    ])
+    const filteredStockOptionsChain = filterStockChain(stockOptionsChain,"call",stockData.maxStrikePrice)
+
+    resultArr = resultArr.concat(callRoi(filteredStockOptionsChain,StockCurrentPrice,stockData.symbol))
+}
+printStockChains(resultArr)
+
 

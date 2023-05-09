@@ -7,6 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "put"  :"node src/put.js",
+    "cherry"  :"node src/putCherry.js",
     "call" :"node src/call.js",
     "devput":"nodemon src/put.js",
     "devcall":"nodemon src/call.js"
