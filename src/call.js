@@ -14,10 +14,7 @@ const {maxExpDate , stocksData} = parseCallParams();
 
 let resultArr = []
 for(const stockData of stocksData ){
-    const [stockOptionsChain,StockCurrentPrice] = await Promise.all([
-        getOptionQuote(stockData.symbol , maxExpDate , stockData.maxStrikePrice,"call" ),
-        getStockPrice(stockData.symbol)
-    ])
+    const [stockOptionsChain,StockCurrentPrice] = await getOptionQuote(stockData.symbol , maxExpDate , stockData.maxStrikePrice,"call" )
     const filteredStockOptionsChain = filterStockChain(stockOptionsChain,"call",stockData.maxStrikePrice)
 
     resultArr = resultArr.concat(callRoi(filteredStockOptionsChain,StockCurrentPrice,stockData.symbol))

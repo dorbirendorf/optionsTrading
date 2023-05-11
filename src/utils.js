@@ -64,9 +64,9 @@ export const getOptionQuote = async (ticker,maxExpDate,maxStrikePrice,Optiontype
         const todayStr = today.toISOString().split('T')[0];
         const res = await axios.get(`https://api.nasdaq.com/api/quote/${ticker}/option-chain?assetclass=stocks&fromdate=${todayStr}&todate=${maxExpDate}&excode=oprac&callput=${Optiontype}&money=out&type=all`)
         const rows = res.data?.data?.table?.rows || [];
-        //const currentPrice  = parseFloat(res.data?.data?.lastTrade.split('$')[1].split('(')[0].trim());
+        const currentPrice  = parseFloat(res.data?.data?.lastTrade.split('$')[1].split('(')[0].trim());
 
-        return rows;
+        return [rows,currentPrice];
     }catch(e){
         console.log(e)
     }
@@ -143,13 +143,20 @@ export const filterStockChain = (stockChain,Optiontype,maxStrikePrice) => {
 }
 
 
+/*
+not in use for now, has failing when used alot
+ */
 export const getStockPrice = async (symbol)=>{
-    const apikey = process.env.API_KEY;
-    const endpoint = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apikey}`;
-    const response = await axios.get(endpoint);
+    try{
+        const apikey = process.env.API_KEY;
+        const endpoint = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apikey}`;
+        const response = await axios.get(endpoint);
 
-    const stockPrice = response.data["Global Quote"]["05. price"]
-    return parseFloat(stockPrice).toFixed(2)
+        const stockPrice = response.data["Global Quote"]["05. price"]
+        return parseFloat(stockPrice).toFixed(2)
+    }catch (e) {
+        console.log(e);
+    }
 }
 
 export const parseCallParams = () =>{
