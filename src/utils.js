@@ -3,7 +3,6 @@ import  "dotenv/config"
 import fs from "fs"
 import chalk from "chalk"
 
-
 export const calcROI = (optionPrice,targetPrice,daysToExp,lavrage=0.1,commission=0) => {
     const cost = targetPrice * lavrage + commission ;
     const profit = optionPrice  ;
@@ -62,10 +61,16 @@ export const getOptionQuote = async (ticker,maxExpDate,maxStrikePrice,Optiontype
     try{
         const today = new Date(Date.now())
         const todayStr = today.toISOString().split('T')[0];
-        const res = await axios.get(`https://api.nasdaq.com/api/quote/${ticker}/option-chain?assetclass=stocks&fromdate=${todayStr}&todate=${maxExpDate}&excode=oprac&callput=${Optiontype}&money=out&type=all`)
+        const url = `https://api.nasdaq.com/api/quote/${ticker}/option-chain?assetclass=stocks&fromdate=${todayStr}&todate=${maxExpDate}&excode=oprac&callput=${Optiontype}&money=out&type=all`
+        const res = await fetch(url, {
+            headers: {
+              "accept-language": "*",
+              "user-agent": "node", 
+            },
+          });
         const rows = res.data?.data?.table?.rows || [];
         const currentPrice  = parseFloat(res.data?.data?.lastTrade.split('$')[1].split('(')[0].trim());
-
+        console.log('got quotes')
         return [rows,currentPrice];
     }catch(e){
         console.log(e)
