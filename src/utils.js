@@ -2,6 +2,7 @@ import axios from "axios"
 import  "dotenv/config"
 import fs from "fs"
 import chalk from "chalk"
+import fetch from "node-fetch"
 
 export const calcROI = (optionPrice,targetPrice,daysToExp,lavrage=0.1,commission=0) => {
     const cost = targetPrice * lavrage + commission ;
@@ -67,10 +68,10 @@ export const getOptionQuote = async (ticker,maxExpDate,maxStrikePrice,Optiontype
               "accept-language": "*",
               "user-agent": "node", 
             },
-          });
-        const rows = res.data?.data?.table?.rows || [];
-        const currentPrice  = parseFloat(res.data?.data?.lastTrade.split('$')[1].split('(')[0].trim());
-        console.log('got quotes')
+          }).then(res => res.json());
+        const rows = res.data?.table?.rows || [];
+        const currentPrice  = parseFloat(res.data?.lastTrade.split('$')[1].split('(')[0].trim());
+        console.log(`currentPrice is ${currentPrice} , got ${rows.length} rows`);
         return [rows,currentPrice];
     }catch(e){
         console.log(e)
@@ -139,7 +140,7 @@ export const callRoi = (chain,currentPrice,ticker) => {
     return res;
 }
 
-export const filterStockChain = (stockChain,Optiontype,maxStrikePrice) => {
+export const filterStockChainWithPricesOnly = (stockChain, Optiontype, maxStrikePrice) => {
    return  stockChain.filter(
        (row) =>
            Optiontype=="put" ?

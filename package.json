@@ -6,11 +6,11 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "put"  :"node src/put.js",
-    "cherry"  :"node src/putCherry.js",
-    "call" :"node src/call.js",
-    "devput":"nodemon src/put.js",
-    "devcall":"nodemon src/call.js"
+    "put": "node src/put.js",
+    "cherry": "node src/putCherry.js",
+    "call": "node src/call.js",
+    "devput": "nodemon src/put.js",
+    "devcall": "nodemon src/call.js"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +22,7 @@
     "axios": "^1.2.1",
     "chalk": "^5.2.0",
     "date-and-time": "^2.4.1",
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "node-fetch": "^3.3.2"
   }
 }
