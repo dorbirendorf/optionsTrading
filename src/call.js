@@ -1,7 +1,5 @@
 import {
-    parsePutParams,
     getOptionQuote,
-    getStockPrice,
     filterStockChainWithPricesOnly,
     callRoi,
     printStockChains,
@@ -20,5 +18,4 @@ for(const stockData of stocksData ){
     resultArr = resultArr.concat(callRoi(filteredStockOptionsChain,StockCurrentPrice,stockData.symbol))
 }
 printStockChains(resultArr)
-
 
